@@ -1,9 +1,34 @@
 import { Controller, Get, Post, Body, Delete, Param, HttpCode, HttpStatus } from '@nestjs/common';
-import { CsService, CsItemPrice } from './cs.service';
+import { CsService, CsItemPrice, ExchangeRate } from './cs.service';
 
 @Controller('cs')
 export class CsController {
   constructor(private readonly csService: CsService) {}
+
+  /**
+   * 获取真实货币汇率（演示外部 API 调用）
+   * GET /api/cs/exchange-rates
+   */
+  @Get('exchange-rates')
+  async getExchangeRates() {
+    try {
+      console.log('[CS Controller] 获取真实汇率数据');
+      const rates = await this.csService.getRealExchangeRates();
+
+      return {
+        code: 200,
+        msg: 'success',
+        data: rates,
+      };
+    } catch (error) {
+      console.error('[CS Controller] 获取汇率数据失败:', error);
+      return {
+        code: 500,
+        msg: error.message || '获取汇率数据失败',
+        data: [],
+      };
+    }
+  }
 
   /**
    * 抓取 CS 道具价格数据

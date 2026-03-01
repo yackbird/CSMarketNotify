@@ -13,12 +13,72 @@ export interface CsItemPrice {
   changePercent?: number;
 }
 
+export interface ExchangeRate {
+  currency: string;
+  name: string;
+  rate: number;
+  changePercent?: number;
+}
+
 @Injectable()
 export class CsService {
   private supabase = getSupabaseClient();
 
   /**
-   * 抓取 CS 道具价格数据（使用 CSGOBackpack API）
+   * 获取真实货币汇率（演示外部 API 调用）
+   */
+  async getRealExchangeRates(): Promise<ExchangeRate[]> {
+    try {
+      console.log('[ExchangeRate] 开始获取真实汇率数据...');
+
+      // 使用 ExchangeRate-API.com 免费公开 API
+      const url = 'https://api.exchangerate-api.com/v4/latest/CNY';
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`ExchangeRate API 请求失败: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('[ExchangeRate] API 响应:', data.rates);
+
+      // 提取常用货币汇率
+      const currencies = [
+        { code: 'USD', name: '美元' },
+        { code: 'EUR', name: '欧元' },
+        { code: 'GBP', name: '英镑' },
+        { code: 'JPY', name: '日元' },
+        { code: 'KRW', name: '韩元' },
+        { code: 'HKD', name: '港币' },
+        { code: 'SGD', name: '新加坡元' },
+        { code: 'AUD', name: '澳元' },
+        { code: 'CAD', name: '加元' },
+      ];
+
+      const rates: ExchangeRate[] = currencies.map((curr) => ({
+        currency: curr.code,
+        name: curr.name,
+        rate: data.rates[curr.code] || 0,
+        changePercent: Math.random() * 2 - 1, // 模拟涨跌幅 -1% 到 +1%
+      }));
+
+      console.log(`[ExchangeRate] 成功获取 ${rates.length} 种货币汇率`);
+      return rates;
+    } catch (error) {
+      console.error('[ExchangeRate] 获取汇率数据失败:', error);
+      throw new Error(`获取汇率数据失败: ${error.message}`);
+    }
+  }
+
+  /**
+   * 抓取 CS 道具价格数据（模拟数据）
    */
   async scrapeCsPrices(): Promise<CsItemPrice[]> {
     try {

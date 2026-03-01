@@ -104,6 +104,15 @@ const IndexPage = () => {
               预警设置
             </Text>
           </View>
+          <View
+            className="flex items-center gap-1 px-3 py-1.5 bg-purple-50 rounded-lg"
+            onClick={() => Taro.navigateTo({ url: '/pages/rates/index' })}
+          >
+            <TrendingUp size={14} color="#9333ea" />
+            <Text className="block text-xs font-medium text-purple-600">
+              实时汇率
+            </Text>
+          </View>
         </View>
       </View>
 
