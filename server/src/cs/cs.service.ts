@@ -18,80 +18,80 @@ export class CsService {
   private supabase = getSupabaseClient();
 
   /**
-   * 抓取 CS 道具价格数据（从 Buff163 等市场）
+   * 抓取 CS 道具价格数据（使用 CSGOBackpack API）
    */
   async scrapeCsPrices(): Promise<CsItemPrice[]> {
     try {
-      // 注意：实际生产环境需要使用真实的市场网站 URL
-      // 这里使用 fetch-url 抓取数据
-      // 由于需要登录等复杂操作，这里提供模拟数据接口
+      console.log('[CSGOBackpack] 开始抓取价格数据...');
 
-      // 实际实现时，可以使用 fetch-url 抓取页面，然后解析价格
-      // const response = await this.fetchClient.fetch('https://buff.163.com/market/csgo');
+      // CSGOBackpack 公开 API - 热门道具价格
+      const url = 'https://prices.csgobackpack.net/api/v1/prices/current/';
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'Accept': 'application/json',
+        },
+      });
 
-      // 模拟热门道具数据
-      const mockItems: CsItemPrice[] = [
-        {
-          name: 'AK-47 | 红线',
-          nameEn: 'AK-47 | Redline',
-          price: 158.50,
-          currency: 'CNY',
-          imageUrl: 'https://cdn.cloudflare.steamstatic.com/apps/730/8c9309d069f4617da93a6b5ebbb42905b6eb85b3.png',
-          category: '步枪',
-          rarity: '隐秘',
-          marketUrl: 'https://buff.163.com/item/...',
-          changePercent: 2.5,
-        },
-        {
-          name: 'AWP | 龙狙',
-          nameEn: 'AWP | Dragon Lore',
-          price: 15800.00,
-          currency: 'CNY',
-          imageUrl: 'https://cdn.cloudflare.steamstatic.com/apps/730/econ/weapons/base_weapons/weapon_awp.png',
-          category: '狙击枪',
-          rarity: '隐秘',
-          marketUrl: 'https://buff.163.com/item/...',
-          changePercent: -1.2,
-        },
-        {
-          name: 'M4A4 | 龙王',
-          nameEn: 'M4A4 | Howl',
-          price: 18500.00,
-          currency: 'CNY',
-          imageUrl: 'https://cdn.cloudflare.steamstatic.com/apps/730/econ/weapons/base_weapons/weapon_m4a1.png',
-          category: '步枪',
-          rarity: '隐秘',
-          marketUrl: 'https://buff.163.com/item/...',
-          changePercent: 5.8,
-        },
-        {
-          name: 'AK-47 | 二西莫夫',
-          nameEn: 'AK-47 | Asiimov',
-          price: 89.00,
-          currency: 'CNY',
-          imageUrl: 'https://cdn.cloudflare.steamstatic.com/apps/730/8c9309d069f4617da93a6b5ebbb42905b6eb85b3.png',
-          category: '步枪',
-          rarity: '隐秘',
-          marketUrl: 'https://buff.163.com/item/...',
-          changePercent: -3.5,
-        },
-        {
-          name: 'USP-S | 黑色魅影',
-          nameEn: 'USP-S | Kill Confirmed',
-          price: 1250.00,
-          currency: 'CNY',
-          imageUrl: 'https://cdn.cloudflare.steamstatic.com/apps/730/econ/weapons/base_weapons/weapon_usp_silencer.png',
-          category: '手枪',
-          rarity: '隐秘',
-          marketUrl: 'https://buff.163.com/item/...',
-          changePercent: 0.8,
-        },
+      if (!response.ok) {
+        throw new Error(`CSGOBackpack API 请求失败: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('[CSGOBackpack] API 响应:', Object.keys(data).length, '个道具');
+
+      // Filter hot items
+      const hotItemsList = [
+        '★ StatTrak™ M9 Bayonet | Crimson Web (Factory New)',
+        'AWP | Dragon Lore (Factory New)',
+        'M4A4 | Howl (Factory New)',
+        '★ Karambit | Fade (Factory New)',
+        'AK-47 | Fire Serpent (Field-Tested)',
+        'AK-47 | Redline (Field-Tested)',
+        'AWP | Asiimov (Field-Tested)',
+        'USP-S | Kill Confirmed (Field-Tested)',
+        'M4A1-S | Hyper Beast (Field-Tested)',
+        'Glock-18 | Fade (Factory New)',
       ];
 
-      return mockItems;
+      const items: CsItemPrice[] = [];
+
+      for (const itemName of hotItemsList) {
+        if (!data[itemName]) {
+          continue;
+        }
+
+        const itemData = data[itemName];
+        const price7days = itemData.price?.['7_days']?.median || 0;
+        
+        if (price7days > 0) {
+          items.push({
+            name: itemName,
+            nameEn: itemName,
+            price: price7days,
+            currency: 'USD', // CSGOBackpack 默认美元
+            imageUrl: '', // API 不返回图片
+            category: 'CSGO 饰品',
+            rarity: '未知',
+            marketUrl: 'https://csbackpack.net',
+            changePercent: 0, // 可以计算7天涨跌幅
+          });
+        }
+      }
+
+      console.log(`[CSGOBackpack] 成功抓取 ${items.length} 条价格数据`);
+
+      // 如果没有获取到数据，返回空数组
+      if (items.length === 0) {
+        console.warn('[CSGOBackpack] 未获取到任何价格数据');
+      }
+
+      return items;
     } catch (error) {
-      console.error('抓取 CS 价格数据失败:', error);
-      throw new Error('抓取价格数据失败');
+      console.error('[CSGOBackpack] 抓取价格数据失败:', error);
+      throw new Error(`抓取价格数据失败: ${error.message}`);
     }
   }
 
