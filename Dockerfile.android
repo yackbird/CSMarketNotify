@@ -1,0 +1,44 @@
+FROM openjdk:17-jdk-slim
+
+# 安装 Android SDK
+ENV ANDROID_HOME=/opt/android-sdk
+ENV PATH=${PATH}:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools
+ENV ANDROID_SDK_ROOT=${ANDROID_HOME}
+
+# 设置不交互模式
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 安装必要的工具
+RUN apt-get update && apt-get install -y \
+    wget \
+    unzip \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# 创建 Android SDK 目录
+RUN mkdir -p ${ANDROID_HOME}/cmdline-tools
+
+# 下载并安装 Android SDK Command-line Tools
+RUN wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O /tmp/cmdline-tools.zip && \
+    unzip -q /tmp/cmdline-tools.zip -d ${ANDROID_HOME}/cmdline-tools && \
+    mv ${ANDROID_HOME}/cmdline-tools/cmdline-tools ${ANDROID_HOME}/cmdline-tools/latest && \
+    rm /tmp/cmdline-tools.zip
+
+# 接受许可
+RUN yes | sdkmanager --licenses
+
+# 安装必要的 SDK 组件
+RUN sdkmanager \
+    "platform-tools" \
+    "platforms;android-33" \
+    "build-tools;33.0.0"
+
+# 设置工作目录
+WORKDIR /app
+
+# 设置环境变量
+ENV GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=\"-Xmx2048m -XX:MaxMetaspaceSize=512m\""
+
+# 默认命令
+CMD ["bash"]
