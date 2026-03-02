@@ -3,7 +3,7 @@ chcp 65001 >nul
 setlocal enabledelayedexpansion
 
 REM ========================================
-REM CSMarketNotify Android APK 一键构建脚本 (Windows 增强版)
+REM CSMarketNotify Android APK 一键构建脚本 (Windows 增强版 - 使用 npx)
 REM ========================================
 
 title CSMarketNotify Android APK 构建脚本
@@ -73,27 +73,8 @@ if %ERRORLEVEL% neq 0 (
 )
 echo.
 
-:: 检查 pnpm
-echo %BLUE%  检查 pnpm...%RESET%
-where pnpm >nul 2>nul
-if %ERRORLEVEL% neq 0 (
-    echo %RED%    ❌ 未找到 pnpm%RESET%
-    echo %YELLOW%    正在安装 pnpm...%RESET%
-    call npm install -g pnpm
-    if %ERRORLEVEL% neq 0 (
-        echo %RED%    pnpm 安装失败%RESET%
-        pause
-        exit /b 1
-    )
-)
-echo %GREEN%    ✅ pnpm 已安装%RESET%
-for /f "tokens=*" %%i in ('pnpm --version') do (
-    echo %BLUE%    版本：%%i%RESET%
-)
-echo.
-
-:: 检查 Node.js
-echo %BLUE%  检查 Node.js...%RESET%
+:: 检查 Node.js 和 npx
+echo %BLUE%  检查 Node.js 和 npx...%RESET%
 where node >nul 2>nul
 if %ERRORLEVEL% neq 0 (
     echo %RED%    ❌ 未找到 Node.js%RESET%
@@ -101,8 +82,35 @@ if %ERRORLEVEL% neq 0 (
     pause
     exit /b 1
 )
+
+where npx >nul 2>nul
+if %ERRORLEVEL% neq 0 (
+    echo %RED%    ❌ 未找到 npx%RESET%
+    echo %YELLOW%    npx 是 Node.js 的一部分，请确保 Node.js 正确安装%RESET%
+    pause
+    exit /b 1
+)
+
 echo %GREEN%    ✅ Node.js 已安装%RESET%
 for /f "tokens=*" %%i in ('node --version') do (
+    echo %BLUE%    版本：%%i%RESET%
+)
+
+echo %GREEN%    ✅ npx 已可用%RESET%
+echo.
+
+:: 验证 pnpm（通过 npx）
+echo %BLUE%  检查 pnpm（通过 npx）...%RESET%
+call npx pnpm --version >nul 2>nul
+if %ERRORLEVEL% neq 0 (
+    echo %RED%    ❌ 无法通过 npx 使用 pnpm%RESET%
+    echo %YELLOW%    请检查网络连接%RESET%
+    pause
+    exit /b 1
+)
+
+echo %GREEN%    ✅ pnpm 可通过 npx 使用%RESET%
+for /f "tokens=*" %%i in ('npx pnpm --version') do (
     echo %BLUE%    版本：%%i%RESET%
 )
 echo.
@@ -120,7 +128,7 @@ if exist "node_modules\" (
     echo %YELLOW%  检测到 node_modules 目录，跳过依赖安装%RESET%
 ) else (
     echo %BLUE%  正在安装依赖（可能需要几分钟）...%RESET%
-    call pnpm install
+    call npx pnpm install
     if %ERRORLEVEL% neq 0 (
         echo %RED%  ❌ 依赖安装失败%RESET%
         pause
@@ -138,7 +146,7 @@ echo %BRIGHT%%BLUE%[3/6] 构建 H5 应用...%RESET%
 echo.
 
 echo %BLUE%  正在构建 H5 应用...%RESET%
-call pnpm build:web
+call npx pnpm build:web
 if %ERRORLEVEL% neq 0 (
     echo %RED%  ❌ H5 构建失败%RESET%
     pause

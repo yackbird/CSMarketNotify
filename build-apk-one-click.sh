@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ========================================
-# CSMarketNotify Android APK 一键构建脚本 (Mac/Linux 增强版)
+# CSMarketNotify Android APK 一键构建脚本 (Mac/Linux 增强版 - 使用 npx)
 # ========================================
 
 # 颜色定义
@@ -61,30 +61,36 @@ else
 fi
 echo ""
 
-# 检查 pnpm
-echo "${BLUE}  检查 pnpm...${RESET}"
-if ! command -v pnpm &> /dev/null; then
-    echo "${RED}    ❌ 未找到 pnpm${RESET}"
-    echo "${YELLOW}    正在安装 pnpm...${RESET}"
-    npm install -g pnpm
-    if [ $? -ne 0 ]; then
-        echo "${RED}    pnpm 安装失败${RESET}"
-        exit 1
-    fi
-fi
-echo "${GREEN}    ✅ pnpm 已安装${RESET}"
-pnpm --version | sed 's/^/    版本：/'
-echo ""
-
-# 检查 Node.js
-echo "${BLUE}  检查 Node.js...${RESET}"
+# 检查 Node.js 和 npx
+echo "${BLUE}  检查 Node.js 和 npx...${RESET}"
 if ! command -v node &> /dev/null; then
     echo "${RED}    ❌ 未找到 Node.js${RESET}"
     echo "${YELLOW}    请安装 Node.js：https://nodejs.org/${RESET}"
     exit 1
 fi
+
+if ! command -v npx &> /dev/null; then
+    echo "${RED}    ❌ 未找到 npx${RESET}"
+    echo "${YELLOW}    npx 是 Node.js 的一部分，请确保 Node.js 正确安装${RESET}"
+    exit 1
+fi
+
 echo "${GREEN}    ✅ Node.js 已安装${RESET}"
 node --version | sed 's/^/    版本：/'
+
+echo "${GREEN}    ✅ npx 已可用${RESET}"
+echo ""
+
+# 验证 pnpm（通过 npx）
+echo "${BLUE}  检查 pnpm（通过 npx）...${RESET}"
+if ! npx pnpm --version &> /dev/null; then
+    echo "${RED}    ❌ 无法通过 npx 使用 pnpm${RESET}"
+    echo "${YELLOW}    请检查网络连接${RESET}"
+    exit 1
+fi
+
+echo "${GREEN}    ✅ pnpm 可通过 npx 使用${RESET}"
+npx pnpm --version | sed 's/^/    版本：/'
 echo ""
 
 echo "${GREEN}✅ 环境检查完成${RESET}"
@@ -100,7 +106,7 @@ if [ -d "node_modules" ]; then
     echo "${YELLOW}  检测到 node_modules 目录，跳过依赖安装${RESET}"
 else
     echo "${BLUE}  正在安装依赖（可能需要几分钟）...${RESET}"
-    pnpm install
+    npx pnpm install
     if [ $? -ne 0 ]; then
         echo "${RED}  ❌ 依赖安装失败${RESET}"
         exit 1
@@ -117,7 +123,7 @@ echo "${BRIGHT}${BLUE}[3/6] 构建 H5 应用...${RESET}"
 echo ""
 
 echo "${BLUE}  正在构建 H5 应用...${RESET}"
-pnpm build:web
+npx pnpm build:web
 if [ $? -ne 0 ]; then
     echo "${RED}  ❌ H5 构建失败${RESET}"
     exit 1
@@ -162,7 +168,7 @@ echo ""
 # ========================================
 # 第 6 步：构建说明
 # ========================================
-echo "${BRIGHT}${BLUE}[6/6] 构建说明${RESET}"
+echo "${BRIGHT}${BLUE}[6/6] 构建说明...${RESET}"
 echo ""
 
 echo "${BRIGHT}${YELLOW}╔════════════════════════════════════════════════════════════╗${RESET}"
