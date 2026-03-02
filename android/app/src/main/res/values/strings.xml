@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CSMarketNotify</string>
+    <string name="title_activity_main">CSMarketNotify</string>
+    <string name="package_name">com.csmarket.app</string>
+    <string name="custom_url_scheme">com.csmarket.app</string>
+</resources>

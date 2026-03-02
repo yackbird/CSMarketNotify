@@ -125,6 +125,50 @@ pnpm build:server # 仅构建后端
 pnpm preview:weapp # 构建并生成预览二维码
 ```
 
+## 📱 Android APK 构建
+
+将 H5 应用打包成 Android APK，可在手机上安装使用。
+
+### 前置要求
+- Java JDK 17+
+- Android Studio
+- pnpm
+
+### 快速构建
+
+#### Windows 用户
+```bash
+build-android-apk.bat
+```
+
+#### Mac/Linux 用户
+```bash
+bash build-android-apk.sh
+```
+
+#### 手动构建
+```bash
+# 1. 安装依赖
+pnpm install
+
+# 2. 构建 H5 应用
+pnpm build:web
+
+# 3. 同步到 Android 项目
+npx cap sync android
+
+# 4. 打开 Android Studio
+npx cap open android
+
+# 5. 在 Android Studio 中构建 APK
+# Build → Build Bundle(s) / APK(s) → Build APK(s)
+```
+
+### 详细文档
+
+- 📖 [QUICK_BUILD.md](QUICK_BUILD.md) - 快速构建指南
+- 📖 [ANDROID_BUILD_GUIDE.md](ANDROID_BUILD_GUIDE.md) - 完整构建文档
+
 ## 数据说明
 
 ### 重要提示
