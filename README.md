@@ -129,12 +129,34 @@ pnpm preview:weapp # 构建并生成预览二维码
 
 将 H5 应用打包成 Android APK，可在手机上安装使用。
 
+### 🎯 推荐方式：本地构建（10 分钟）
+
+> **为什么选择本地构建？**
+> - 完全控制构建过程
+> - 无需依赖在线服务
+> - 可以自定义应用签名和配置
+> - 支持持续开发和调试
+
+**📖 超详细本地构建指南**：
+- ⚡ [QUICK_REFERENCE.md](QUICK_REFERENCE.md) - 快速参考卡（推荐）
+- 📖 [LOCAL_BUILD_GUIDE.md](LOCAL_BUILD_GUIDE.md) - 超详细完整指南
+- 📖 [ANDROID_BUILD_GUIDE.md](ANDROID_BUILD_GUIDE.md) - 技术文档
+
+**快速开始**：
+1. 下载项目代码（272KB）
+2. 安装 Java JDK 17 + Android Studio
+3. 运行构建命令
+4. 在 Android Studio 中构建 APK
+5. 安装到手机
+
+详见：[LOCAL_BUILD_GUIDE.md](LOCAL_BUILD_GUIDE.md)
+
 ### 前置要求
 - Java JDK 17+
 - Android Studio
 - pnpm
 
-### 快速构建
+### 一键构建脚本
 
 #### Windows 用户
 ```bash
@@ -146,7 +168,7 @@ build-android-apk.bat
 bash build-android-apk.sh
 ```
 
-#### 手动构建
+### 手动构建
 ```bash
 # 1. 安装依赖
 pnpm install
@@ -166,8 +188,10 @@ npx cap open android
 
 ### 详细文档
 
-- 📖 [QUICK_BUILD.md](QUICK_BUILD.md) - 快速构建指南
+- ⚡ [QUICK_REFERENCE.md](QUICK_REFERENCE.md) - 快速参考卡（推荐）
+- 📖 [LOCAL_BUILD_GUIDE.md](LOCAL_BUILD_GUIDE.md) - 超详细完整指南
 - 📖 [ANDROID_BUILD_GUIDE.md](ANDROID_BUILD_GUIDE.md) - 完整构建文档
+- 📖 [ONLINE_BUILD_GUIDE.md](ONLINE_BUILD_GUIDE.md) - 在线构建文档
 
 ## 数据说明
 
