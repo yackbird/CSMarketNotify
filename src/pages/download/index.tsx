@@ -8,23 +8,45 @@ export default function DownloadPage() {
   }, [])
 
   const handleDownload = () => {
-    // 读取文件并触发下载
-    Taro.request({
-      url: '/api/download/code',
-      method: 'GET',
-      responseType: 'arraybuffer',
-      success: (res) => {
-        const blob = new Blob([res.data as ArrayBuffer], { type: 'application/gzip' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'CSMarketNotify.tar.gz'
-        a.click()
-        URL.revokeObjectURL(url)
-      },
-      fail: (err) => {
-        Taro.showToast({ title: '下载失败', icon: 'none' })
-        console.error(err)
+    Taro.showToast({ title: '开始下载...', icon: 'loading' })
+
+    // 直接打开下载链接
+    const downloadUrl = '/api/download/code'
+
+    // 方式 1: H5 端使用 window.open
+    if (process.env.TARO_ENV === 'h5') {
+      window.open(downloadUrl, '_blank')
+      setTimeout(() => {
+        Taro.showToast({ title: '下载已开始', icon: 'success' })
+      }, 1000)
+    }
+    // 方式 2: 小程序端使用 downloadFile
+    else if (process.env.TARO_ENV === 'weapp') {
+      Taro.downloadFile({
+        url: downloadUrl,
+        success: (res) => {
+          Taro.showToast({ title: '下载成功', icon: 'success' })
+          Taro.openDocument({
+            filePath: res.tempFilePath,
+            showMenu: true
+          })
+        },
+        fail: (err) => {
+          console.error('下载失败:', err)
+          Taro.showToast({ title: '下载失败', icon: 'none' })
+        }
+      })
+    }
+  }
+
+  const handleDirectLink = () => {
+    // 复制链接到剪贴板
+    const fullUrl = 'https://db3da4c8-8fa1-495c-ace9-6439bb93d07d.dev.coze.site/api/download/code'
+
+    Taro.setClipboardData({
+      data: fullUrl,
+      success: () => {
+        Taro.showToast({ title: '链接已复制', icon: 'success' })
       }
     })
   }
@@ -36,7 +58,7 @@ export default function DownloadPage() {
           📦 CS 价格监控小程序
         </Text>
 
-        <View className="space-y-4 mb-6">
+        <View className="space-y-3 mb-6">
           <View className="flex items-center">
             <Text className="block text-green-500 mr-2">✅</Text>
             <Text className="block text-gray-600">完整前后端源码</Text>
@@ -51,29 +73,38 @@ export default function DownloadPage() {
           </View>
           <View className="flex items-center">
             <Text className="block text-green-500 mr-2">✅</Text>
-            <Text className="block text-gray-600">设计规范</Text>
+            <Text className="block text-gray-600">GitHub 推送脚本</Text>
           </View>
         </View>
 
         <View className="bg-blue-50 rounded-lg p-4 mb-6">
           <Text className="block text-sm text-gray-600 text-center">
-            文件大小：260KB
+            文件大小：261KB
           </Text>
           <Text className="block text-sm text-gray-600 text-center mt-2">
             格式：tar.gz 压缩包
           </Text>
         </View>
 
-        <Button
-          onClick={handleDownload}
-          className="w-full bg-blue-500 text-white rounded-lg py-3 text-base"
-        >
-          点击下载源码
-        </Button>
+        <View className="space-y-3">
+          <Button
+            onClick={handleDownload}
+            className="w-full bg-blue-500 text-white rounded-lg py-3"
+          >
+            点击下载源码
+          </Button>
+
+          <Button
+            onClick={handleDirectLink}
+            className="w-full bg-gray-100 text-gray-700 rounded-lg py-3"
+          >
+            复制下载链接
+          </Button>
+        </View>
 
         <View className="mt-6 text-center">
           <Text className="block text-xs text-gray-500">
-            解压后运行 pnpm install && pnpm dev
+            下载后运行：bash push-to-github.sh
           </Text>
         </View>
       </View>

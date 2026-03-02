@@ -1,4 +1,4 @@
-import { Controller, Get, Res } from '@nestjs/common';
+import { Controller, Get, Res, Header } from '@nestjs/common';
 import { AppService } from '@/app.service';
 import { Response } from 'express';
 import * as fs from 'fs';
@@ -25,18 +25,55 @@ export class AppController {
   }
 
   @Get('download/code')
+  @Header('Content-Type', 'application/gzip')
+  @Header('Content-Disposition', 'attachment; filename=CSMarketNotify.tar.gz')
   downloadCode(@Res() res: Response) {
-    const filePath = path.join(process.cwd(), 'CSMarketNotify.tar.gz');
-    const fileStream = fs.createReadStream(filePath);
+    try {
+      // 修正路径：使用项目根目录
+      const projectRoot = path.join(__dirname, '..', '..');
+      const filePath = path.join(projectRoot, 'CSMarketNotify.tar.gz');
 
-    res.setHeader('Content-Type', 'application/gzip');
-    res.setHeader('Content-Disposition', 'attachment; filename=CSMarketNotify.tar.gz');
+      console.log('项目根目录:', projectRoot);
+      console.log('文件路径:', filePath);
 
-    fileStream.pipe(res);
+      // 检查文件是否存在
+      if (!fs.existsSync(filePath)) {
+        console.error('文件不存在:', filePath);
+        return res.status(404).send({
+          status: 'error',
+          message: '文件不存在'
+        });
+      }
 
-    fileStream.on('error', (error) => {
-      console.error('文件下载失败:', error);
-      res.status(500).send('文件下载失败');
-    });
+      // 读取文件大小
+      const stats = fs.statSync(filePath);
+      console.log('文件大小:', stats.size);
+
+      // 创建文件流
+      const fileStream = fs.createReadStream(filePath);
+
+      // 处理错误
+      fileStream.on('error', (error) => {
+        console.error('文件流错误:', error);
+        if (!res.headersSent) {
+          res.status(500).send({
+            status: 'error',
+            message: '文件下载失败'
+          });
+        }
+      });
+
+      // 管道传输
+      fileStream.pipe(res);
+
+    } catch (error) {
+      console.error('下载错误:', error);
+      if (!res.headersSent) {
+        res.status(500).send({
+          status: 'error',
+          message: '服务器错误'
+        });
+      }
+    }
   }
 }
